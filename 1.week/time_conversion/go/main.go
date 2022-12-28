@@ -1,42 +1,66 @@
-#!/bin/python3
+package main
 
-import math
-import os
-import random
-import re
-import sys
+import (
+    "bufio"
+    "fmt"
+    "io"
+    "os"
+    "strings"
+    "strconv"
+)
 
-#
-# Complete the 'timeConversion' function below.
-#
-# The function is expected to return a STRING.
-# The function accepts STRING s as parameter.
-#
+/*
+ * Complete the 'timeConversion' function below.
+ *
+ * The function is expected to return a STRING.
+ * The function accepts STRING s as parameter.
+ */
 
-def timeConversion(s):
-    # Write your code here
-    t = s[:8]
-    dn = s[8:]
-    h, m, s = t.split(':')
-    h = int(h)
-    if dn == "PM":
-        if h != 12:
-            h += 12
-        return f"{h}:{m}:{s}"
-    else:
-        if h == 12:
-            h = "0"
-        h = "0" + str(h)
-        return f"{h}:{m}:{s}"
+func timeConversion(s string) string {
+    // Write your code here
+    isAM := s[len(s)-2] == 'A'
+    is12 := s[:2] == "12"
+    hour, _ := strconv.Atoi(s[:2]) // ignoring Atoi error
+    switch {
+    case isAM && is12:
+        hour -= 12
+    case !isAM && !is12:
+        hour += 12
+    }
+    return fmt.Sprintf("%02s%s", strconv.Itoa(hour), s[2:len(s)-2])
+}
 
-if __name__ == '__main__':
-    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+func main() {
+    reader := bufio.NewReaderSize(os.Stdin, 16 * 1024 * 1024)
 
-    s = input()
+    stdout, err := os.Create(os.Getenv("OUTPUT_PATH"))
+    checkError(err)
 
-    result = timeConversion(s)
+    defer stdout.Close()
 
-    fptr.write(result + '\n')
+    writer := bufio.NewWriterSize(stdout, 16 * 1024 * 1024)
 
-    fptr.close()
+    s := readLine(reader)
+
+    result := timeConversion(s)
+
+    fmt.Fprintf(writer, "%s\n", result)
+
+    writer.Flush()
+}
+
+func readLine(reader *bufio.Reader) string {
+    str, _, err := reader.ReadLine()
+    if err == io.EOF {
+        return ""
+    }
+
+    return strings.TrimRight(string(str), "\r\n")
+}
+
+func checkError(err error) {
+    if err != nil {
+        panic(err)
+    }
+}
 
